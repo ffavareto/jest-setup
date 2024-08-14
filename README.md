@@ -1,27 +1,98 @@
-# JestSetup
+# Configurar Jest no Angular
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.0.
+**Desinstalando o Karma**
 
-## Development server
+```bash
+npm uninstall karma karma-chrome-launcher karma-coverage-istanbul-reporter karma-jasmine karma-jasmine-html-reporter karma-coverage jasmine-core
+```
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+---
 
-## Code scaffolding
+**Apagar os arquivos `karma.conf.js` `test.ts`**
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+**Remover bloco `test` do arquivo `angular.config`**
 
-## Build
+---
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+**Instalando as libs**
 
-## Running unit tests
+```bash
+npm install jest jest-preset-angular @types/jest ts-node --save-dev
+```
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+---
 
-## Running end-to-end tests
+**Criar arquivo `setup-jest.ts`**
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+```jsx
+import 'jest-preset-angular/setup-jest';
+```
 
-## Further help
+---
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+**Atualizar `tsconfig.spec.json`**
+
+```json
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/spec",
+    "types": [
+      "jest",
+      "node"
+    ]
+  },
+  "files": [
+    "src/setup-jest.ts",
+  ],
+  "include": [
+    "src/**/*.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}
+```
+
+---
+
+Criar arquivo de configuração do jest **`*jest.config.ts*`**
+
+```jsx
+import type {Config} from 'jest';
+
+const config: Config = {
+  collectCoverageFrom: [
+    '**/*.{js,jsx}',
+    '!**/node_modules/**',
+    '!**/vendor/**',
+  ],
+  preset: "jest-preset-angular",
+  setupFilesAfterEnv: ["<rootDir>/setup-jest.ts"],
+  globalSetup: 'jest-preset-angular/global-setup',
+  testPathIgnorePatterns: [
+    "<rootDir>/node_modules/",
+    "<rootDir>/dist/"
+  ],
+  transform: {
+    '^.+\\.(ts|js|html)$': ['jest-preset-angular', {
+      tsConfig: "<rootDir>/tsconfig.spec.json",
+      stringifyContentPathRegex: "\\.html$"
+    }]
+  },
+};
+
+export default config;
+```
+
+---
+
+Trocar o script de teste pelo `jest`
+
+```json
+"scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "jest"
+  },
+```
